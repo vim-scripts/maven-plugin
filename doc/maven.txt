@@ -1,10 +1,11 @@
-*maven.txt*	For Vim version 7.3.  Last change: 2012 May 7
+*maven.txt*	For Vim version 7.4.  Last change: 2015 Sep 16
 
 		  Maven(Java based building tool) REFERENCE MANUAL    by Mike Lue
 
 Help on Maven plugin					*maven-plugin* *maven-plugin-help*
 
 I. Installation							|maven-plugin-installation|
+II. Setup keysrokes						|maven-plugin-setup-keys|
 
 1. Introduction							|maven-plugin-introduction|
 1.1. Execute Maven command				|maven-tutorial-execute|
@@ -24,6 +25,7 @@ I. Installation							|maven-plugin-installation|
 2.5. Maven Options for Unit Test		|maven-plugin-options-unittest|
 
 3. Version History						|maven-plugin-version-history|
+4. Known Issues							|maven-plugin-known-issues|
 
 ==============================================================================
 I. Installation					*maven-plugin-installation*
@@ -39,6 +41,12 @@ I. Installation					*maven-plugin-installation*
 	helptags ~/vimfiles/doc
 
 4. Read the introduction from this plugin's help.
+
+==============================================================================
+II. Setup keysrokes					*maven-plugin-setup-keys*
+
+This plugin only has a few of maps in normal/insert model. You may check
+||maven-tutorial-keystrokes| to setup keys which are used by author.
 
 ==============================================================================
 1. Introduction					*maven-plugin-introduction*
@@ -103,10 +111,10 @@ Here are the versions which has been tested for 'errorformat':
 	Maven Version: 3.0.X~
 	http://maven.apache.org/
 
-	Compiler Plugin Version: 2.3.2~
+	Compiler Plugin Version: 3.0
 	http://maven.apache.org/plugins/maven-compiler-plugin/
 
-	Surefire Plugin Version: 2.11 ~
+	Surefire Plugin Version: 2.14~
 	http://maven.apache.org/plugins/maven-surefire-plugin/
 
 If you want to know detail of 'errorformat' of Maven, please see the source
@@ -114,32 +122,33 @@ code of "compiler/maven.vim".
 
 Recognize Messages from Maven ~
 
-In |quickfix|, this plugin can recognize following error messages from Maven:
+In |quickfix|, this plugin render messages from Maven to following examples:
 
 	* Error of POM.xml: >
 		The project idv.mikelue:sandbox-java:1.0-SNAPSHOT (D:\Code\sandbox-java\pom.xml) has 1 error
 		sandbox-java/pom.xml|10 col 8 error| Unrecognised tag: 'data' (position: START_TAG seen ...</parent>\r\n\r\n\t<data>... @10:8)
 <
-	* Error/Warning of Compilation(Ignore the lines after '[INFO] BUILD FAILURE'): >
-		sandbox-java/src/main/java/idv/mikelue/Car.java|4 col 25 warning| [deprecation] do1() in idv.mikelue.Can has been deprecated
+	* Error of Compilation(Ignore the lines after '[INFO] BUILD FAILURE'): >
 		|| COMPILATION ERROR :
-		sandbox-java/src/main/java/idv/mikelue/Can.java|9 col 2 error| cannot find symbol
-		|| symbol  : method do3()
-		|| location: class idv.mikelue.Can
+		src/main/java/idv/mikelue/App.java|17 col 6 error| error: ';' expected
+<
+	* Warning of Compilation: >
+		src/main/java/idv/mikelue/App.java|17 col 3 warning| [deprecation] do1() in Util has been deprecated
 <
 	* Failure of Unit Test(JUnit or TestNG): >
 		||
 		|| -------------------------------------------------------
 		||  T E S T S
 		|| -------------------------------------------------------
-		|| Running idv.mikelue.CanTest
-		|| Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.407 sec <<< FAILURE!
-		||
-		|| Results :
-		||
-		sandbox-java/src/test/java/idv/mikelue/CanTest.java|\<test01\>| Message or test sample expected:<true> but was:<false>
-		||
-		|| Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+		|| Running idv.mikelue.RegionAndInheritancePerformanceTest
+		|| Configuring TestNG with: TestNG652Configurator
+		|| Tests run: 13, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 0.656 sec <<< FAILURE!
+		src/test/java/idv/mikelue/RegionAndInheritancePerformanceTest.java|\<do1\>|  expected [3] but found [1]	at org.testng.Assert.fail(Assert.java:94)
+		|| 	at org.testng.Assert.failNotEquals(Assert.java:494)
+		|| 	at org.testng.Assert.assertEquals(Assert.java:123)
+		|| 	at org.testng.Assert.assertEquals(Assert.java:370)
+		|| 	at org.testng.Assert.assertEquals(Assert.java:380)
+		|| 	at idv.mikelue.RegionAndInheritancePerformanceTest.do1(RegionAndInheritancePerformanceTest.java:25)
 		||
 <
 
@@ -170,7 +179,8 @@ edit a new ".java" file: >
 
 Locating a file in Maven project is the most used daily routine in
 development. With this plugin, once having opend a file which is recognized
-under a Maven project, you may a file by VIM's spectacular command |:find|.
+where a Maven project contains, you may find a file by VIM's spectacular
+command |:find|.
 
 Here are examples for finding file/directory: >
 
@@ -180,11 +190,12 @@ Here are examples for finding file/directory: >
 <
 
 And you will see the possible files/directories in your Maven project. This is
-why the functionality of |g:maven_auto_set_path| is designed into this plugin.
+why the functionality of |g:maven_auto_set_path| is designed in this plugin.
 
-See |:find| for usage of 'path' and |wildcard| for syntax in {file}.
+See |:find|, |:tabfind| and |:sfind| for finding files; and usage of 'path'
+and |wildcard| for name syntax of file.
 
-Since this plugin has used |startstart-wildcard| to set 'path', you already
+Since this plugin has used |wildcards| to set 'path', you already
 have benefits of searching a directory tree in a Maven project.
 
 See: |maven#getListOfPaths()| for the directories set to 'path' by this
@@ -269,6 +280,14 @@ See: https://github.com/Shougo/neocomplcache-snippets-complete
 
 ==============================================================================
 1.7. Suggestions of keystrokes  		*maven-tutorial-keystrokes*
+
+I setup map used in my own development environment. Following list is a
+summary of keystrokes map to this plugin I am using.
+
+<F5> - Execute unit test of current buffer("Mvn test -Dtest=%:t:r")
+<C-F5> - Execute unit test of current project("Mvn test")
+<F6> - Jump to/back file of source/test code
+<C-F6> - Jump to/back file of test code/result
 
 Following samples are suggestions of mapping of this plugin: >
 	autocmd BufNewFile,BufReadPost *.* call s:SetupMavenMap()
@@ -365,18 +384,34 @@ Maven's context
 		The [package], inputted by hand hardly, could be auto-compelted by
 		press <|tab|>. The entry directory for searching auto-completion comes
 		from {prefix} or the extension of file name of current buffer.
+		The default value of [package] is the package of current file.
 
 		The [-prefix] option is used to declare the prefix under
 		'{basedir}/src/main/{prefix}/' instead of {file-extension}. You may
 		use <Tab> to automatically complete existing directories.
 
-		For example: >
+		The [file-name] argument could be only the format".ext", which editng the
+		file with name({"%:t:r"}) of current buffer.
 
+		Examples: >
+
+			" Edit a file in src/main/java/org/pkgname/ClassName.java
 			:MvnNewMainFile org.pkgname ClassName.java
-			:MvnNewMainFile <Tab> " Auto-completing package coming from {basedir}/src/main/*/**/'
-			:MvnNewMainFile -p=resources org.pkgname ClassName.properties " Edit new file under /resources/
-			:MvnNewMainFile -p=webapp/WEB-INF org.pkgname ClassName.properties " Edit new file under /webapp/WEB-INF/
-			:MvnNewMainFile -p=<Tab> " Auto-completing directories under {basedir}/src/main/*
+			" Edit a file in src/main/resource/org/pkgname/AConfig.properties
+			:MvnNewMainFile -p=resources org.pkgname AConfig.properties
+			" Edit a file in src/main/webapp/WEB-INF/org/pkgname/WConfig.xml
+			:MvnNewMainFile -p=webapp/WEB-INF org.pkgname WConfig.xml
+<
+		Examples(auto-complete): >
+
+			" auto-complete package name
+			:MvnNewMainFile <Tab>
+			" auto-complete folders under src/main/*
+			:MvnNewMainFile -p=<Tab>
+<
+		For example(assume your current file is {idv/your/MyClass.java}): >
+			" Edit a file for src/main/resources/idv/your/MyClass.xml
+			:MvnNewMainFile -p=resources .xml
 <
 		See: |MvnNewTestFile|
 
@@ -387,9 +422,8 @@ Maven's context
 		For example: >
 
 			:MvnNewTestFile org.pkgname ClassName.java
-			:MvnNewTestFile <Tab> " Auto-completing package coming from {basedir}/src/test/*/**/'
-			:MvnNewMainFile -p=resources org.pkgname ClassName.properties
-			:MvnNewMainFile -p=<Tab> " Auto-completing directories under {basedir}/src/test/*
+			" Edit a file for src/test/resources/{current_file_package}/MyClass.xml
+			:MvnNewTestFile -p=resources .xml
 <
 		See: |:MvnNewMainFile|
 
@@ -426,8 +460,16 @@ maven#switch-unittest-file		Switch between source/unit test file. If the
 								file doesn't exist, it would ask whether to edit a
 								new file or not.
 
+								Note: While the current buffer is result of
+								test, this map would jump back to the file of
+								test code.
+
 |mapmode-n| |mapmode-i|				*maven#open-test-result*
-maven#open-test-result			Open the result of testing by JUnit. See |MvnOpenTestResult|.
+maven#open-test-result			Open the result of testing by JUnit. Note:
+								While the current buffer is the result file of
+								test, use this map again would jump back to
+								the file of test code. See
+								|MvnOpenTestResult|.
 
 ==============================================================================
 2.3. Maven Functions							*maven-plugin-function*
@@ -473,14 +515,11 @@ maven#getListOfPaths(buf) 								*maven#getListOfPaths()*
 	Generate a list of paths which is used to set the 'path'.
 	The content of list: >
 
-		{basedir}/src/main/java/**
-		{basedir}/src/test/java/**
-		{basedir}/src/main/resources/**
-		{basedir}/src/test/resources/**
-		{basedir}/src/main/webapp/**
-		{basedir}/src/test/webapp/**
-		{basedir}/src/main/**
-		{basedir}/src/test/**
+		{basedir}/src/main/<any_subfolder>/**
+		{basedir}/src/test/<any_subfolder>/**
+		{basedir}/src/<subfolders exclude 'main/' and 'test/'>/**
+		{basedir}/src/<subfolder_exclude_main_test>/**
+		{basedir}/<subfolders exclude 'src/' and 'target/'>/**
 		{basedir}/target/**
 		{basedir}
 <
@@ -488,6 +527,27 @@ maven#getListOfPaths(buf) 								*maven#getListOfPaths()*
 	Normally, you don't need this function to setup 'path'. Instead, you
 	should use |g:maven_auto_set_path| to control whether to set 'path'
 	automatically.
+
+	Paths are sorted by: >
+		"/src/main/java",
+		"/src/main/scala",
+		"/src/main/groovy",
+		"/src/test/java",
+		"/src/test/scala",
+		"/src/test/groovy",
+		"/src/main/resources",
+		"/src/test/resources",
+		"/src/main/webapp",
+		"/src/test/webapp",
+		"/src/it",
+		"/src/site",
+		"/src/assembly",
+		"/src",
+		<the deeper the folder is, the priority is high>,
+		<for same number of levels of path, sorted alphbatically>
+<
+
+	Paths are excluded: "{basedir}/target"
 
 	{a:buf} - The buffer is going to be checked for {basedir}
 
@@ -641,6 +701,28 @@ http://maven.apache.org/plugins/maven-surefire-plugin/test-mojo.html#includes
 ==============================================================================
 3. Version History				*maven-plugin-version-history*
 
+[2015-09-16] 1.1:
+	* Improve the sorting for search paths
+	* Improve sorting of |maven#getListOfPaths()|
+	* Improve command |:MvnNewMainFile| and |:MvnNewTestFile|
+	* Merge modifications by richox <richselian@gmail.com>
+
+[2013-03-21] 1.0: Update the message processing for:
+	maven-compiler-plugin: 3.0
+	maven-surefire-plugin: 2.14
+
 [2012-05-07] 1.0: Initiate this plugin
+
+==============================================================================
+4. Known Issues				*maven-plugin-known-issues*
+
+1) The problem of quickfix for error message of parent POM
+The error of parent POM: >
+	||   The project idv.mikelue:p-st:1.0-SNAPSHOT (D:\Code\sandbox-stringtemplate\pom.xml) has 1 error
+	\Code\common\pom.xml|10 col 5 error| Unrecognised tag: 'a' (position: START_TAG seen ...</version>\n\n\t<a>... @10:5)
+<
+
+Since the quickfix can't handle "../folder/filename" correctly in MS-Windows,
+the file location of it can't be used to jumping.
 
  vim:tw=78:fo=tcq2:isk=!-~,^*,^\|,^\":ts=4:ft=help:norl:
